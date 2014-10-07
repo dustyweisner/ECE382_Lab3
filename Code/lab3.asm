@@ -62,9 +62,16 @@ while0:
 	jz		while0						; Yes, branch back and wait
 
 	mov		#NOKIA_DATA, R12			; For testing just draw an 8 pixel high
-	mov		#0xE7, R13					; beam with a 2 pixel hole in the center
-	call	#writeNokiaByte
-
+;	mov		#0xE7, R13					; beam with a 2 pixel hole in the center
+;	call	#writeNokiaByte
+;---------------------------------------------------------------------
+			mov		#0xFF, R13
+			mov		#0, r9
+writeBlock	call	#writeNokiaByte
+			inc.b	r9
+			cmp		#8, r9
+			jnz		writeBlock
+;---------------------------------------------------------------------
 	inc		R10							; since rows are 8 times bigger than columns
 	and.w	#0x07, R10					; wrap over the row mod 8
 	inc		R11							; just let the columm overflow after 92 buttons
@@ -281,10 +288,14 @@ setAddress:
 	push	R13
 	rra.w	R13					; shift right 4 bits
 	rra.w	R13
-	rra.w	R13
+    rra.w	R13
 	rra.w	R13
 	and.w	#0x0F, R13			; mask out upper nibble
-	bis.w	#0x10, R13			; 10 is the prefix for a upper column address
+;	bis.w	#0x10, R13			; 10 is the prefix for a upper column address
+;------------------------------------------------------------------
+	bis.w	#0x10, R13
+;------------------------------------------------------------------
+
 	call	#writeNokiaByte
 
 	mov.w	#0x00, R2			; Write a command, setup call to
