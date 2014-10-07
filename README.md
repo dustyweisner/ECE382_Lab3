@@ -25,10 +25,10 @@ The following table was created by finding the 4 calls to writeNokiaByte that ge
 |:-----|:-----|:-----|:-----|
 |66|`0x0001`|`0x00E7`| Draws an 8 pixel high beam with a 2 pixel hole in the center|
 |276|`0x0000`|`0x00B1`|Masks out any weird upper nibble bits and masks in "B0" as the prefix for a page address|
-|288|`0x0000`|`0x0010`|Masks out upper nibble and 10 is the prefix for a upper column address|
+|288|`0x0000`|`0x0010`|Masks out upper nibble and 10 is the prefix for a upper column address - width of beam|
 |294|`0x0000`|`0x0001`|Writes a command and sets up call to make a copy of the top of the stack|
 
-Next I configured the logic analyzer to capture the waveform generated when the SW3 button is pressed and released. Then I decoded the data bits of each 9-bit waveform by separating out the MSB, which indicates command or data. Explain how the packet contents correspond to what was drawn on the display. Be specific with the relationship between the data values and what and where the pixels are drawn
+Next I configured the logic analyzer to capture the waveform generated when the SW3 button is pressed and released. Then I decoded the data bits of each 9-bit waveform by separating out the MSB, which indicates command or data.
 
 |__Line__|__Command/Data__|__8-Bit Packet__|
 |:-----|:-----|:-----|
@@ -36,3 +36,9 @@ Next I configured the logic analyzer to capture the waveform generated when the 
 |276|Command|`0xB1`|
 |288|Command|`0x10`|
 |294|Command|`0x01`|
+
+After each button press, the command 8-bit packet for both lines 276 and 294 increase by 1. This is indicated on the LCD screen by the line with the gap being transposed down the screen (or up depending on orientation). The data packet at line 66 is never changed because it is the information which draws the height of the beam. The Command packet at line 288 also never changes because it is the set width of the beam.
+
+From lines 93 to 100, Reset is cleared. The following waveform was captured in the logic analyzer, showing reset on the falling edge:
+
+GRAPPPPPPPPPPPPPPPPPPPPPPPPPPPPHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
