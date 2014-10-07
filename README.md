@@ -22,8 +22,16 @@ When SW3 is detected as being pressed and released in the lines of code below (l
 The following table was created by finding the 4 calls to writeNokiaByte that generate these packets,scanning the nearby code to determine the parameters being passed into this subroutine, and writing a brief description of what is trying to be accomplished by each call to writeNokiaByte:
 
 |__Line__|__R12__|__R13__|__Purpose__|
-|:-----|:-----|:-----|:-----|:-----|
-|||||
-|||||
-|||||
-|||||
+|:-----|:-----|:-----|:-----|
+|66|`0x0001`|`0x00E7`| Draws an 8 pixel high beam with a 2 pixel hole in the center|
+|276|`0x0000`|`0x00B1`|Masks out any weird upper nibble bits and masks in "B0" as the prefix for a page address|
+|288|`0x0000`|`0x0010`|Masks out upper nibble and 10 is the prefix for a upper column address|
+|294|`0x0000`|`0x0001`|Writes a command and sets up call to make a copy of the top of the stack|
+
+|__Line__|__Command/Data__|__8-Bit Packet__|
+|:-----|:-----|:-----|
+|||
+|||
+|||
+|||
+|||
