@@ -28,7 +28,11 @@ The following table was created by finding the 4 calls to writeNokiaByte that ge
 |288|`0x0000`|`0x0010`|Masks out upper nibble and 10 is the prefix for a upper column address - width of beam|
 |294|`0x0000`|`0x0001`|Writes a command and sets up call to make a copy of the top of the stack|
 
-Next I configured the logic analyzer to capture the waveform generated when the SW3 button is pressed and released. Then I decoded the data bits of each 9-bit waveform by separating out the MSB, which indicates command or data.
+Next I configured the logic analyzer to capture the waveform generated when the SW3 button is pressed and released, as shown below:
+
+GRAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+
+Then I decoded the data bits of each 9-bit waveform by separating out the MSB, which indicates command or data.
 
 |__Line__|__Command/Data__|__8-Bit Packet__|
 |:-----|:-----|:-----|
