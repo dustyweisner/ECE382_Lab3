@@ -131,7 +131,7 @@ I also needed to check for if the button is released before the actual movement 
             		call	#write
             		jmp	while1
 
-`#clearDisplay` was fortunately already made, but the `writeRight`, etc., had to be created using logic of the register usage for changing columns and rows. For `writeRight` I used `add #8, r11` to shift the column pointer right. Oppositely, for `writeLeft` I used `sub #8, r11`. For `writeBottom` I used `inc r10` to shift the row pointer down, and for `writeTop` I used `dec r10` to shift the row pointer up. 
+`#clearDisplay` was fortunately already made, but the `#writeRight`, etc., had to be created using logic of the register usage for changing columns and rows. For `#writeRight` I used `add #8, r11` to shift the column pointer right. Oppositely, for `#writeLeft` I used `sub #8, r11`. For `#writeBottom` I used `inc r10` to shift the row pointer down, and for `#writeTop` I used `dec r10` to shift the row pointer up. 
 
 Finally, to display the moved block, I used `mov #NOKIA_DATA, R12` and the block of code used to make an 8x8 block and returned to my `while1` loop. This correctly did the A functionality but I needed to fix one thing: the block would not start of displayed on the screen. This easy fix only entailed me using this same coding in the main before the `while1` loop starts.
 
