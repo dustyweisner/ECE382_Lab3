@@ -49,38 +49,121 @@ main:
 	call	#init						; initialize the MSP430
 	call	#initNokia					; initialize the Nokia 1206
 	call	#clearDisplay				; clear the display and get ready....
+	mov		#NOKIA_DATA, R12			; For testing just draw an 8 pixel high
+	call	#blockIt
 
 	clr		R10							; used to move the cursor around
 	clr		R11
+;-------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+while1:								; 0 = pressed
+	bit.b	#2, &P2IN				;RIGHT PRESS? bit 1 of P1IN set?
+	jz		clrRight
+	bit.b	#4, &P2IN				;LEFT PRESS?  bit 2 of P1IN set?
+	jz		clrLeft
+	bit.b	#16, &P2IN				;BOTTOM PRESS? bit 4 of P1IN set?
+	jz		clrBottom
+	bit.b	#32, &P2IN				;TOP PRESS?  bit 5 of P1IN set?
+	jz 		clrTop
+	jmp 	while1
 
-while1:
-	bit.b	#8, &P2IN					; bit 3 of P1IN set?
-	jnz 	while1						; Yes, branch back and wait
+clrRight	bit.b	#2, &P2IN		;1 = NOT PRESSED
+			jz		clrRight
+			call	#clearDisplay	;Clear Display
+			call	#writeRight		;Changes values
+			call	#write			;Draws values
+			jmp		while1
+clrLeft		bit.b	#4, &P2IN
+			jz		clrLeft
+			call	#clearDisplay
+			call	#writeLeft
+			call	#write
+			jmp		while1
+clrBottom	bit.b	#16, &P2IN
+			jz		clrBottom
+			call	#clearDisplay
+			call	#writeBottom
+			call	#write
+			jmp     while1
+clrTop		bit.b	#32, &P2IN					; bit of P2IN clear?
+			jz		clrTop
+			call	#clearDisplay
+			call	#writeTop
+			call	#write
 
-while0:
-	bit.b	#8, &P2IN					; bit 3 of P1IN clear?
-	jz		while0						; Yes, branch back and wait
+			jmp		while1
 
-	mov		#NOKIA_DATA, R12			; For testing just draw an 8 pixel high
+
+
+									; Yes, branch back and wait
+write:
+
+			mov		#NOKIA_DATA, R12			; For testing just draw an 8 pixel high
+;			call	#clearDisplay
+			call	#blockIt
+			ret
+
+;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
+;while1:
+;	bit.b	#8, &P2IN					; bit 3 of P1IN set?
+;	jnz 	while1						; Yes, branch back and wait
+
+;while0:
+;	bit.b	#8, &P2IN					; bit 3 of P1IN clear?
+;	jz		while0						; Yes, branch back and wait
+;
+;	mov		#NOKIA_DATA, R12			; For testing just draw an 8 pixel high
 ;	mov		#0xE7, R13					; beam with a 2 pixel hole in the center
 ;	call	#writeNokiaByte
 ;---------------------------------------------------------------------
+blockIt:
 			mov		#0xFF, R13
 			mov		#0, r9
 writeBlock	call	#writeNokiaByte
 			inc.b	r9
 			cmp		#8, r9
 			jnz		writeBlock
+			ret
+
+
 ;---------------------------------------------------------------------
-	inc		R10							; since rows are 8 times bigger than columns
+;	inc	R10 						; since rows are 8 times bigger than columns
+writeRight:
+	add		#8, r11
 	and.w	#0x07, R10					; wrap over the row mod 8
-	inc		R11							; just let the columm overflow after 92 buttons
+										; just let the columm overflow after 92 buttons
 	mov		R10, R12					; increment the row
 	mov		R11, R13					; and column of the next beam
 	call	#setAddress					; we draw
+	ret
 
-	jmp		while1
+writeLeft:
+	sub		#8, r11
+	and.w	#0x07, R10					; wrap over the row mod 8
+										; just let the columm overflow after 92 buttons
+	mov		R10, R12					; increment the row
+	mov		R11, R13					; and column of the next beam
+	call	#setAddress					; we draw
+	ret
 
+writeBottom:
+	inc		r10
+	and.w	#0x07, R10					; wrap over the row mod 8
+										; just let the columm overflow after 92 buttons
+	mov		R10, R12					; increment the row
+	mov		R11, R13					; and column of the next beam
+	call	#setAddress					; we draw
+	ret
+
+writeTop:
+	dec		r10
+	and.w	#0x07, R10					; wrap over the row mod 8
+										; just let the columm overflow after 92 buttons
+	mov		R10, R12					; increment the row
+	mov		R11, R13					; and column of the next beam
+	call	#setAddress					; we draw
+	ret
 ;-------------------------------------------------------------------------------
 ;	Name:		initNokia		68(rows)x92(columns)
 ;	Inputs:		none
@@ -180,6 +263,7 @@ init:
 	bis.b	#0x3E, &P2REN					; Pullup/Pulldown Resistor Enabled on P2.1 - P2.5
 	bis.b	#0x3E, &P2OUT					; Assert output to pull-ups pin P2.1 - P2.5
 	bic.b	#0x3E, &P2DIR
+
 
 	ret
 
@@ -291,10 +375,8 @@ setAddress:
     rra.w	R13
 	rra.w	R13
 	and.w	#0x0F, R13			; mask out upper nibble
-;	bis.w	#0x10, R13			; 10 is the prefix for a upper column address
-;------------------------------------------------------------------
-	bis.w	#0x10, R13
-;------------------------------------------------------------------
+	bis.w	#0x10, R13			; 10 is the prefix for a upper column address
+
 
 	call	#writeNokiaByte
 
@@ -302,6 +384,9 @@ setAddress:
 	pop		R13					; make a copy of the top of the stack
 	push	R13
 	and.w	#0x0F, R13
+;-------------------------------------------------------------------------------
+;	and.w	#0x00, R13
+;-------------------------------------------------------------------------------
 	call	#writeNokiaByte
 
 	pop		R13
