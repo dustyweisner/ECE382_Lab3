@@ -88,4 +88,51 @@ To acheive A functionality, I first looked for something in the code that would 
             ;	7 6 5 4 3 2 1 0
             ;	0 0 1 1 1 1 1 0		0x3E
 
-I decided that I didn't need the Aux button for this code, and instead used the Right, Left, Bottom, and Up buttons. Because I needed
+I decided that I didn't need the Aux button for this code, and instead used the Right, Left, Bottom, and Up buttons. Because I needed to use the button push still, I just converted the bit 3 code for the "while button is pushed" to code for bits 1 (right), 2 (left), 4 (bottom), and 5 (up). The following code is what resulted:
+
+            while1:								; 0 = pressed
+            	bit.b	#2, &P2IN				;RIGHT PRESS? bit 1 of P1IN set?
+            	jz		clrRight
+            	bit.b	#4, &P2IN				;LEFT PRESS?  bit 2 of P1IN set?
+            	jz		clrLeft
+            	bit.b	#16, &P2IN				;BOTTOM PRESS? bit 4 of P1IN set?
+            	jz		clrBottom
+            	bit.b	#32, &P2IN				;TOP PRESS?  bit 5 of P1IN set?
+            	jz 		clrTop
+            	jmp 	while1
+
+I also needed to check for if the button is released before the actual movement code. So not only did I wait for the button to clear but I called three subroutines: to first clear the display, to move the box in the direction pushed, and to write the box on the display. Here was my code for such logic:
+
+            clrRight                bit.b	#2, &P2IN		;1 = NOT PRESSED
+            		jz          clrRight
+            		call	#clearDisplay	;Clear Display
+            		call	#writeRight		;Changes values
+            		call	#write		;Draws values
+            		jmp	while1
+            		
+            clrLeft	            bit.b	#4, &P2IN
+            		jz	clrLeft
+            		call	#clearDisplay
+            		call	#writeLeft
+            		call	#write
+            		jmp	while1
+            		
+            clrBottom	            bit.b	#16, &P2IN
+            		jz	clrBottom
+            		call	#clearDisplay
+            		call	#writeBottom
+            		call	#write
+            		jmp         while1
+            		
+            clrTop		bit.b	#32, &P2IN	           	; bit of P2IN clear?
+            		jz	clrTop
+            		call	#clearDisplay
+            		call	#writeTop
+            		call	#write
+            		jmp	while1
+
+`#clearDisplay` was fortunately already made, but the `writeRight`, etc., had to be created using logic of the register usage for changing columns and rows. For `writeRight` I used `add #8, r11` to shift the column pointer right. Oppositely, for `writeLeft` I used `sub #8, r11`. For `writeBottom` I used `inc r10` to shift the row pointer down, and for `writeTop` I used `dec r10` to shift the row pointer up. 
+
+Finally, to display the moved block, I used `mov #NOKIA_DATA, R12` and the block of code used to make an 8x8 block and returned to my `while1` loop. This correctly did the A functionality but I needed to fix one thing: the block would not start of displayed on the screen. This easy fix only entailed me using this same coding in the main before the `while1` loop starts.
+
+This concludes the A functionality of Lab 3 Serial Peripheral Interface - "I/O".
